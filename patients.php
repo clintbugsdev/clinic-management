@@ -2,23 +2,15 @@
     require_once(dirname(__FILE__) . "/db_connection.inc.php");
     require_once(dirname(__FILE__) . "/helpers.inc.php");
 
-
-    // Symptomps
-    $sql = "SELECT consultations.*, 
-    patients.first_name, 
-    patients.middle_name, 
-    patients.last_name, 
-    patients.suffix_name, 
-    patients.birthdate, 
-    patients.gender, 
-    doctors.name as doctor_name,
-    doctor_types.type as doctor_type_name
-    FROM consultations 
-    LEFT JOIN patients ON patients.id = consultations.patient_id 
-    LEFT JOIN doctors ON doctors.id = consultations.doctor_id 
-    LEFT JOIN doctor_types ON doctor_types.id = consultations.doctor_type_id 
-    ORDER BY consultations.date_created DESC";
-    $consultations = $conn->query($sql);
+    // Patients
+    $sql = "SELECT * FROM patients ";
+    if (!empty($_GET['s'])) {
+        $sql .= "WHERE first_name LIKE '%" . $_GET['s'] . "%' ";
+        $sql .= "OR middle_name LIKE '%" . $_GET['s'] . "%' ";
+        $sql .= "OR last_name LIKE '%" . $_GET['s'] . "%' ";
+    }
+    $sql .= "ORDER BY date_created DESC";
+    $patients = $conn->query($sql);
     ?>
 
  <!DOCTYPE html>
@@ -57,36 +49,36 @@
 
  <body>
 
-     <h2>Consultations</h2>
-
-     <a class="button-link" href="add_consultation.php">NEW CONSULTATION</a>
+     <h2>Patients</h2>
      <a class="button-link" href="add_patient.php">NEW PATIENT</a>
-     <a class="button-link" href="add_doctor.php">NEW DOCTOR</a>
+     <a class="button-link" href="index.php" style="float:right;">BACK</a>
 
-     <a class="button-link" href="doctors.php" style="float:right;">DOCTORS</a>
-     <a class="button-link" href="patients.php" style="float:right; margin-right:5px;">PATIENTS</a>
+     <form style="margin-top: 20px;" action="patients.php?s=<?php echo $_GET['s']; ?>" method="GET">
+         <input type="text" id="s" name="s">
+         <input type="submit" value="Search">
+     </form>
      <table style="margin-top: 20px;">
          <tr>
-             <th>Date</th>
-             <th>Time</th>
-             <th>Patient</th>
+             <th>Last Name</th>
+             <th>First Name</th>
+             <th>Middle Name</th>
+             <th>Suffix</th>
              <th>Birthdate</th>
              <th>Age</th>
              <th>Gender</th>
-             <th>Chief Complaint</th>
-             <th>Doctor</th>
-             <th>Type</th>
-             <th>Fee</th>
+             <th>Date Created</th>
+             <th>Actions</th>
          </tr>
          <?php
-            if ($consultations->num_rows > 0) {
+            if ($patients->num_rows > 0) {
                 // output data of each row
-                while ($row = $consultations->fetch_assoc()) { ?>
+                while ($row = $patients->fetch_assoc()) { ?>
 
                  <tr>
-                     <td><?php echo date('Y-m-d', strtotime($row['date_created'])); ?></td>
-                     <td><?php echo date('h:i a', strtotime($row['date_created'])); ?></td>
+                     <td><?php echo $row['last_name']; ?></td>
                      <td><?php echo $row['first_name']; ?></td>
+                     <td><?php echo $row['middle_name']; ?></td>
+                     <td><?php echo $row['suffix_name']; ?></td>
                      <td><?php echo $row['birthdate']; ?></td>
                      <td>
                          <?php
@@ -96,10 +88,10 @@
                             ?>
                      </td>
                      <td><?php echo $row['gender']; ?></td>
-                     <td><?php echo $row['chief_complaint']; ?></td>
-                     <td><?php echo $row['doctor_name']; ?></td>
-                     <td><?php echo $row['doctor_type_name']; ?></td>
-                     <td><?php echo $row['fee']; ?></td>
+                     <td><?php echo date('Y-m-d', strtotime($row['date_created'])); ?></td>
+                     <td>
+                         <a class="button-link" href="edit_patient.php?id=<?php echo $row['id']; ?>">Edit</a>
+                     </td>
                  </tr>
          <?php
                 }

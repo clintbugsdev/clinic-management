@@ -42,6 +42,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($conn->query($sql) === TRUE) {
         echo "New patient created successfully";
+        $host  = $_SERVER['HTTP_HOST'];
+        $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        $extra = "patients.php";
+        header("Location: http://$host$uri/$extra");
+        exit();
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
@@ -50,10 +55,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html>
+<style>
+    .button-link {
+        border: 1px solid #ddd;
+        color: #000;
+        text-align: center;
+        padding: 8px;
+        text-decoration: none;
+        height: 14px;
+        background-color: #ccc;
+    }
+</style>
 
 <body>
 
     <h2>Add Patient</h2>
+    <a class="button-link" href="index.php" style="float:right;">BACK</a>
 
     <form action="add_patient.php" method="POST">
         <label for="first_name">First Name:</label><br>
